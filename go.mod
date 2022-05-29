@@ -1,4 +1,4 @@
-module diploma
+module github.com/naneri/diploma
 
 go 1.17
 
