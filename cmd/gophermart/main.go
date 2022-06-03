@@ -15,7 +15,7 @@ func main() {
 	configErr := env.Parse(&cfg)
 
 	if configErr != nil {
-		log.Fatalf("error parsing the config: %v", configErr)
+		log.Fatalf("error parsing config: %v", configErr)
 	}
 
 	r := mainHandler()
