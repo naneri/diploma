@@ -28,5 +28,7 @@ func mainHandler() *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.GzipMiddleware)
+
+	//r.Post("/api/user/register", )
 	return r
 }
