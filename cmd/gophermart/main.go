@@ -1,10 +1,10 @@
 package main
 
 import (
-	"diploma/cmd/config"
-	"diploma/cmd/middleware"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
+	"github.com/naneri/diploma/cmd/config"
+	"github.com/naneri/diploma/cmd/middleware"
 	"log"
 	"net/http"
 )
