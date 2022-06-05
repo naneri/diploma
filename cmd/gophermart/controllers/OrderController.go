@@ -52,7 +52,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !services.ValidLuhn(intOrderId) {
-		http.Error(w, "Incorrect order id", http.StatusBadRequest)
+		http.Error(w, "Incorrect order id", http.StatusUnprocessableEntity)
 		return
 	}
 
