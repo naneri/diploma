@@ -14,7 +14,7 @@ type UserID string
 
 const UserIDContextKey = "UserID"
 
-var secretKey = []byte("secret key ")
+var secretKey = []byte("secret key")
 var userID uint32
 
 func IDMiddleware(next http.Handler) http.Handler {
