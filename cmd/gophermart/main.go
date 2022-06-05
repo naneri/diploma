@@ -71,10 +71,10 @@ func mainHandler() *chi.Mux {
 
 	r.Post("/api/user/register", authController.Register)
 	r.Post("/api/user/login", authController.Login)
-	r.Post("/api/user/orders", itemController.Add)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.IDMiddleware)
+		r.Post("/api/user/orders", itemController.Add)
 	})
 
 	return r
