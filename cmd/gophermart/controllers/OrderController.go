@@ -85,6 +85,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 
 	if respDecode := json.NewDecoder(resp.RawBody()).Decode(&dtoOrder); respDecode != nil {
 		http.Error(w, "error interacting with internal system", http.StatusBadRequest)
+		log.Println("error decoding json: " + respDecode.Error())
 		return
 	}
 
@@ -92,6 +93,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 
 	if storeErr != nil {
 		http.Error(w, "error storing the order", http.StatusBadRequest)
+		log.Println("error storing the order: " + storeErr.Error())
 		return
 	}
 
