@@ -25,7 +25,7 @@ func (dbRepo *DbRepository) Save(login, hashedPass string) (User, error) {
 	}
 
 	if user.Login == login {
-		return User{}, &alreadyExists{login}
+		return User{}, &AlreadyExistsError{login}
 	}
 
 	user.Login = login

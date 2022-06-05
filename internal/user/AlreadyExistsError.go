@@ -2,10 +2,10 @@ package user
 
 import "fmt"
 
-type alreadyExists struct {
+type AlreadyExistsError struct {
 	login string
 }
 
-func (e *alreadyExists) Error() string {
+func (e *AlreadyExistsError) Error() string {
 	return fmt.Sprintf("User with login %s already exists.", e.login)
 }
