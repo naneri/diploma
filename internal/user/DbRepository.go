@@ -43,6 +43,7 @@ func (dbRepo *DbRepository) Find(login string) (User, bool, error) {
 	var user User
 
 	searchErr := dbRepo.DbConnection.Where("login", login).Find(&user)
+
 	if searchErr.Error != nil {
 		return User{}, false, searchErr.Error
 	}
@@ -52,4 +53,16 @@ func (dbRepo *DbRepository) Find(login string) (User, bool, error) {
 	} else {
 		return user, true, nil
 	}
+}
+
+func (dbRepo *DbRepository) FindUserById(id uint32) (User, error) {
+	var user User
+
+	searchErr := dbRepo.DbConnection.Where("id", id).First(&user).Error
+
+	if searchErr != nil {
+		return User{}, searchErr
+	}
+
+	return user, nil
 }

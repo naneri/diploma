@@ -7,6 +7,7 @@ import (
 	"github.com/naneri/diploma/cmd/gophermart/config"
 	"github.com/naneri/diploma/cmd/gophermart/controllers"
 	"github.com/naneri/diploma/cmd/gophermart/middleware"
+	"github.com/naneri/diploma/internal/item"
 	"github.com/naneri/diploma/internal/services"
 	"github.com/naneri/diploma/internal/user"
 	"gorm.io/driver/postgres"
@@ -18,6 +19,7 @@ import (
 var cfg config.Config
 var db *gorm.DB
 var userRepo *user.DbRepository
+var itemRepo *item.DbRepository
 
 func main() {
 
@@ -42,6 +44,7 @@ func main() {
 	}
 	services.RunMigrations(db)
 	userRepo = user.InitDatabaseRepository(db)
+	itemRepo = item.InitDatabaseRepository(db)
 
 	r := mainHandler()
 
@@ -60,8 +63,14 @@ func mainHandler() *chi.Mux {
 		Config:   &cfg,
 	}
 
+	itemController := controllers.OrderController{
+		ItemRepo: itemRepo,
+		UserRepo: userRepo,
+	}
+
 	r.Post("/api/user/register", authController.Register)
 	r.Post("/api/user/login", authController.Login)
+	r.Post("/api/user/orders", itemController.Add)
 
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.IDMiddleware)
