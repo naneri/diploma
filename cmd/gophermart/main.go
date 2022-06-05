@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
-	"github.com/naneri/diploma/cmd/config"
-	"github.com/naneri/diploma/cmd/middleware"
+	"github.com/naneri/diploma/cmd/gophermart/config"
+	"github.com/naneri/diploma/cmd/gophermart/middleware"
 	"log"
 	"net/http"
 )
