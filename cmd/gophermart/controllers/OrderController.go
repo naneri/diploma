@@ -26,7 +26,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 	orderId, err := io.ReadAll(r.Body)
 	// обрабатываем ошибку
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 
 	intOrderId, parseErr := strconv.Atoi(stringOrderId)
 	if parseErr != nil {
-		http.Error(w, "wrong input format", http.StatusBadRequest)
+		http.Error(w, "wrong input format", http.StatusUnprocessableEntity)
 		return
 	}
 
