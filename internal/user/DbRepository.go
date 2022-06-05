@@ -24,11 +24,11 @@ func (dbRepo *DbRepository) Save(login, hashedPass string) (User, error) {
 		return User{}, searchErr
 	}
 
-	if user.Username == login {
+	if user.Login == login {
 		return User{}, &alreadyExists{login}
 	}
 
-	user.Username = login
+	user.Login = login
 	user.Password = hashedPass
 	saveErr := dbRepo.DbConnection.Create(&user).Error
 
@@ -37,4 +37,19 @@ func (dbRepo *DbRepository) Save(login, hashedPass string) (User, error) {
 	}
 
 	return user, nil
+}
+
+func (dbRepo *DbRepository) Find(login string) (User, bool, error) {
+	var user User
+
+	searchErr := dbRepo.DbConnection.Where("login", login).Find(&user)
+	if searchErr.Error != nil {
+		return User{}, false, searchErr.Error
+	}
+
+	if searchErr.RowsAffected == 0 {
+		return User{}, false, nil
+	} else {
+		return user, true, nil
+	}
 }
