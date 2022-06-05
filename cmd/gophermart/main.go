@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/naneri/diploma/cmd/gophermart/config"
@@ -25,6 +26,14 @@ func main() {
 	if configErr != nil {
 		log.Fatalf("error parsing config: %v", configErr)
 	}
+
+	if flag.Lookup("a") == nil {
+		flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "default server Port")
+		flag.StringVar(&cfg.DatabaseAddress, "d", cfg.DatabaseAddress, "database DSN")
+		flag.StringVar(&cfg.AccrualAddress, "f", cfg.AccrualAddress, "accrual system address")
+	}
+
+	flag.Parse()
 
 	var dbErr error
 	db, dbErr = gorm.Open(postgres.Open(cfg.DatabaseAddress), &gorm.Config{})
