@@ -1,11 +1,17 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/go-resty/resty/v2"
+	"github.com/naneri/diploma/cmd/gophermart/config"
+	"github.com/naneri/diploma/cmd/gophermart/controllers/Dto"
 	"github.com/naneri/diploma/cmd/gophermart/middleware"
 	"github.com/naneri/diploma/internal/item"
 	"github.com/naneri/diploma/internal/services"
 	"github.com/naneri/diploma/internal/user"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -13,6 +19,7 @@ import (
 type OrderController struct {
 	ItemRepo *item.DbRepository
 	UserRepo *user.DbRepository
+	Config   *config.Config
 }
 
 func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +70,37 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(http.StatusConflict)
 			return
+		}
+	}
+
+	client := resty.New()
+
+	resp, requestErr := client.R().Get(fmt.Sprintf("%s/api/orders/%d", c.Config.AccrualAddress, intOrderId))
+	if requestErr != nil {
+		http.Error(w, "Errors searching for the order in the accrual system", http.StatusInternalServerError)
+		return
+	}
+
+	var dtoOrder Dto.Order
+
+	if respDecode := json.NewDecoder(resp.RawBody()).Decode(&dtoOrder); respDecode != nil {
+		http.Error(w, "error interacting with internal system", http.StatusBadRequest)
+		return
+	}
+
+	_, storeErr := c.ItemRepo.StoreItem(userID, uint(intOrderId), dtoOrder.Status, dtoOrder.Accrual)
+
+	if storeErr != nil {
+		http.Error(w, "error storing the order", http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+
+	if dtoOrder.Accrual != 0 {
+		updateErr := c.UserRepo.UpdateUserBalance(userID, dtoOrder.Accrual)
+		if updateErr != nil {
+			log.Println("error updating the balance: ", updateErr)
 		}
 	}
 }

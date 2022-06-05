@@ -32,7 +32,7 @@ func main() {
 	if flag.Lookup("a") == nil {
 		flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "default server Port")
 		flag.StringVar(&cfg.DatabaseAddress, "d", cfg.DatabaseAddress, "database DSN")
-		flag.StringVar(&cfg.AccrualAddress, "f", cfg.AccrualAddress, "accrual system address")
+		flag.StringVar(&cfg.AccrualAddress, "r", cfg.AccrualAddress, "accrual system address")
 	}
 
 	flag.Parse()
@@ -66,6 +66,7 @@ func mainHandler() *chi.Mux {
 	itemController := controllers.OrderController{
 		ItemRepo: itemRepo,
 		UserRepo: userRepo,
+		Config:   &cfg,
 	}
 
 	r.Post("/api/user/register", authController.Register)

@@ -1,6 +1,8 @@
 package item
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type DbRepository struct {
 	DbConnection *gorm.DB
@@ -28,4 +30,19 @@ func (repo DbRepository) GetItemByOrderId(orderId uint) (Item, bool, error) {
 	} else {
 		return item, true, nil
 	}
+}
+
+func (repo DbRepository) StoreItem(userId uint32, orderId uint, status string, accrual float64) (Item, error) {
+	item := Item{
+		OrderId: orderId,
+		Bonus:   accrual,
+		UserId:  userId,
+		Status:  status,
+	}
+
+	if storeErr := repo.DbConnection.Create(item).Error; storeErr != nil {
+		return Item{}, storeErr
+	}
+
+	return item, nil
 }

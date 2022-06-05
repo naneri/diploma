@@ -66,3 +66,19 @@ func (dbRepo *DbRepository) FindUserById(id uint32) (User, error) {
 
 	return user, nil
 }
+
+func (dbRepo *DbRepository) UpdateUserBalance(userId uint32, bonus float64) error {
+	var user User
+
+	if searchErr := dbRepo.DbConnection.Where("id", userId).First(&user).Error; searchErr != nil {
+		return searchErr
+	}
+
+	user.Balance += bonus
+
+	if saveErr := dbRepo.DbConnection.Save(&user).Error; saveErr != nil {
+		return saveErr
+	}
+
+	return nil
+}

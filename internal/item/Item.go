@@ -11,5 +11,7 @@ type Item struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	OrderId   uint
+	Bonus     float64
 	UserId    uint32
+	Status    string
 }
