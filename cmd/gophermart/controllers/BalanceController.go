@@ -9,14 +9,16 @@ import (
 	"github.com/naneri/diploma/cmd/gophermart/middleware"
 	"github.com/naneri/diploma/internal/services"
 	"github.com/naneri/diploma/internal/user"
+	"github.com/naneri/diploma/internal/withdrawal"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
 )
 
 type BalanceController struct {
-	UserRepo     *user.DBRepository
-	DBConnection *gorm.DB
+	UserRepo       *user.DBRepository
+	WithdrawalRepo *withdrawal.DBRepository
+	DBConnection   *gorm.DB
 }
 
 func (c BalanceController) GetCurrentBalance(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +79,42 @@ func (c BalanceController) RequestWithdraw(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (c BalanceController) ListWithdrawals(w http.ResponseWriter, r *http.Request) {
+	loggedUser, userSearchErr := c.findUserFromRequest(r)
+	if userSearchErr != nil {
+		http.Error(w, "error finding the user", http.StatusInternalServerError)
+		return
+	}
+
+	withdrawals, err := c.WithdrawalRepo.ListUserWithdrawals(loggedUser.ID)
+	if err != nil {
+		http.Error(w, "error getting withdrawals", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	outputWithdrawals := make([]dto.OutputWithdrawal, 0)
+	for _, dbWithdrawal := range withdrawals {
+		outputWithdrawals = append(outputWithdrawals, dto.OutputWithdrawal{
+			Order:       dbWithdrawal.OrderID,
+			Sum:         dbWithdrawal.Sum,
+			ProcessedAt: dbWithdrawal.CreatedAt,
+		})
+	}
+
+	if len(outputWithdrawals) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	encodeErr := json.NewEncoder(w).Encode(outputWithdrawals)
+
+	if encodeErr != nil {
+		http.Error(w, "error generating response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (c BalanceController) findUserFromRequest(r *http.Request) (user.User, error) {

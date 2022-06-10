@@ -10,6 +10,7 @@ import (
 	"github.com/naneri/diploma/internal/item"
 	"github.com/naneri/diploma/internal/services"
 	"github.com/naneri/diploma/internal/user"
+	"github.com/naneri/diploma/internal/withdrawal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -21,6 +22,7 @@ var cfg config.Config
 var db *gorm.DB
 var userRepo *user.DBRepository
 var itemRepo *item.DBRepository
+var withdrawalRepo *withdrawal.DBRepository
 
 func main() {
 
@@ -46,6 +48,7 @@ func main() {
 	services.RunMigrations(db)
 	userRepo = user.InitDatabaseRepository(db)
 	itemRepo = item.InitDatabaseRepository(db)
+	withdrawalRepo = withdrawal.InitDatabaseRepository(db)
 
 	go processOrders(userRepo, itemRepo, cfg.AccrualAddress)
 
@@ -79,8 +82,9 @@ func mainHandler() *chi.Mux {
 	}
 
 	balanceController := controllers.BalanceController{
-		UserRepo:     userRepo,
-		DBConnection: db,
+		UserRepo:       userRepo,
+		WithdrawalRepo: withdrawalRepo,
+		DBConnection:   db,
 	}
 
 	r.Post("/api/user/register", authController.Register)
@@ -92,6 +96,7 @@ func mainHandler() *chi.Mux {
 		r.Get("/api/user/orders", itemController.List)
 		r.Get("/api/user/balance", balanceController.GetCurrentBalance)
 		r.Post("/api/user/balance/withdraw", balanceController.RequestWithdraw)
+		r.Get("/api/user/withdrawals", balanceController.ListWithdrawals)
 	})
 
 	return r

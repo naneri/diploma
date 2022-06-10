@@ -91,7 +91,6 @@ func (c OrderController) List(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if len(outputItems) == 0 {
-
 		return
 	}
 

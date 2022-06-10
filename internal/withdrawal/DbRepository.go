@@ -15,3 +15,11 @@ func InitDatabaseRepository(dbConnection *gorm.DB) *DBRepository {
 
 	return &dbRepo
 }
+
+func (repo DBRepository) ListUserWithdrawals(UserID uint32) ([]Withdrawal, error) {
+	var withdrawals []Withdrawal
+
+	err := repo.DBConnection.Where("user_id", UserID).Find(&withdrawals).Error
+
+	return withdrawals, err
+}
