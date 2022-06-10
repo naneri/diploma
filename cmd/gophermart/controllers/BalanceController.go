@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/naneri/diploma/cmd/gophermart/controllers/Dto"
+	"github.com/naneri/diploma/cmd/gophermart/httpServices"
 	"github.com/naneri/diploma/cmd/gophermart/middleware"
+	"github.com/naneri/diploma/internal/services"
 	"github.com/naneri/diploma/internal/user"
 	"gorm.io/gorm"
 	"net/http"
@@ -38,6 +40,12 @@ func (c BalanceController) GetCurrentBalance(w http.ResponseWriter, r *http.Requ
 }
 
 func (c BalanceController) RequestWithdraw(w http.ResponseWriter, r *http.Request) {
+	loggedUser, userSearchErr := c.findUserFromRequest(r)
+	if userSearchErr != nil {
+		http.Error(w, "error finding the user", http.StatusInternalServerError)
+		return
+	}
+
 	var WithdrawData Dto.Withdraw
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&WithdrawData); decodeErr != nil {
@@ -46,7 +54,27 @@ func (c BalanceController) RequestWithdraw(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	//services.PerformWithdraw()
+	uintOrderId, parseErr := httpServices.ParseOrderId(WithdrawData.Order)
+	if parseErr != nil {
+		http.Error(w, parseErr.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	withDrawErr := services.PerformWithdraw(c.DbConnection, c.UserRepo, loggedUser.ID, WithdrawData.Sum, uintOrderId)
+
+	var lowBalanceErr services.NotEnoughBalanceError
+
+	if errors.As(withDrawErr, &lowBalanceErr) {
+		http.Error(w, "not enough balance", http.StatusPaymentRequired)
+		return
+	}
+
+	if withDrawErr != nil {
+		http.Error(w, "error processing the withdraw", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (c BalanceController) findUserFromRequest(r *http.Request) (user.User, error) {

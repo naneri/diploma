@@ -16,7 +16,13 @@ func PerformWithdraw(db *gorm.DB, userRepo *user.DbRepository, userId uint32, su
 			return err
 		}
 
-		dbUser.Balance += sum
+		if sum > dbUser.Balance {
+			return &NotEnoughBalanceError{
+				balance: dbUser.Balance,
+				sum:     sum,
+			}
+		}
+		dbUser.Balance += sum * -1
 
 		if err := tx.Save(&dbUser).Error; err != nil {
 			return err
