@@ -47,10 +47,10 @@ func (repo DBRepository) StoreItem(userID uint32, orderID uint, status string, a
 	return item, nil
 }
 
-func (repo DBRepository) GetUserItems(userId uint32) ([]Item, error) {
+func (repo DBRepository) GetUserItems(userID uint32) ([]Item, error) {
 	var items []Item
 
-	err := repo.DBConnection.Where("user_id", userId).Find(&items).Error
+	err := repo.DBConnection.Where("user_id", userID).Find(&items).Error
 
 	if err != nil {
 		return nil, err

@@ -12,7 +12,7 @@ type Item struct {
 	UploadedAt time.Time `json:"uploaded_at"`
 }
 
-func (i Item) MarshalJson() ([]byte, error) {
+func (i Item) MarshalJSON() ([]byte, error) {
 	type ItemAlias Item
 
 	aliasValue := struct {
