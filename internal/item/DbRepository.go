@@ -40,7 +40,7 @@ func (repo DbRepository) StoreItem(userId uint32, orderId uint, status string, a
 		Status:  status,
 	}
 
-	if storeErr := repo.DbConnection.Create(item).Error; storeErr != nil {
+	if storeErr := repo.DbConnection.Create(&item).Error; storeErr != nil {
 		return Item{}, storeErr
 	}
 
