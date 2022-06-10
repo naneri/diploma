@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
-	"github.com/naneri/diploma/cmd/gophermart/controllers/Dto"
+	"github.com/naneri/diploma/cmd/gophermart/controllers/dto"
 	"github.com/naneri/diploma/internal/item"
 	"github.com/naneri/diploma/internal/user"
 	"log"
