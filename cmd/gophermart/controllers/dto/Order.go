@@ -1,4 +1,4 @@
-package Dto
+package dto
 
 type Order struct {
 	Order   uint `json:"order,string"`

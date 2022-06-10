@@ -6,13 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func PerformWithdraw(db *gorm.DB, userRepo *user.DbRepository, userId uint32, sum float64, orderId uint) error {
+func PerformWithdraw(db *gorm.DB, userRepo *user.DBRepository, userID uint32, sum float64, orderID uint) error {
 	userRepo.Access.Lock()
 	defer userRepo.Access.Unlock()
 	return db.Transaction(func(tx *gorm.DB) error {
 		var dbUser user.User
 
-		if err := tx.Where("id", userId).First(&dbUser).Error; err != nil {
+		if err := tx.Where("id", userID).First(&dbUser).Error; err != nil {
 			return err
 		}
 
@@ -30,9 +30,9 @@ func PerformWithdraw(db *gorm.DB, userRepo *user.DbRepository, userId uint32, su
 		}
 
 		dbWithdrawal := withdrawal.Withdrawal{
-			UserId:  userId,
+			UserID:  userID,
 			Sum:     sum,
-			OrderId: orderId,
+			OrderID: orderID,
 		}
 
 		if err := tx.Save(&dbWithdrawal).Error; err != nil {

@@ -15,8 +15,8 @@ import (
 )
 
 type BalanceController struct {
-	UserRepo     *user.DbRepository
-	DbConnection *gorm.DB
+	UserRepo     *user.DBRepository
+	DBConnection *gorm.DB
 }
 
 func (c BalanceController) GetCurrentBalance(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,7 @@ func (c BalanceController) GetCurrentBalance(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	balance := Dto.Balance{
+	balance := dto.Balance{
 		Current:   loggedUser.Balance,
 		Withdrawn: loggedUser.WithDrawn,
 	}
@@ -47,7 +47,7 @@ func (c BalanceController) RequestWithdraw(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	var WithdrawData Dto.Withdraw
+	var WithdrawData dto.Withdraw
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&WithdrawData); decodeErr != nil {
 		http.Error(w, "please check that all fields are sent", http.StatusBadRequest)
@@ -55,13 +55,13 @@ func (c BalanceController) RequestWithdraw(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	uintOrderId, parseErr := httpServices.ParseOrderId(WithdrawData.Order)
+	uintOrderID, parseErr := httpservices.ParseOrderID(WithdrawData.Order)
 	if parseErr != nil {
 		http.Error(w, parseErr.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
-	withDrawErr := services.PerformWithdraw(c.DbConnection, c.UserRepo, loggedUser.ID, WithdrawData.Sum, uintOrderId)
+	withDrawErr := services.PerformWithdraw(c.DBConnection, c.UserRepo, loggedUser.ID, WithdrawData.Sum, uintOrderID)
 
 	var lowBalanceErr services.NotEnoughBalanceError
 
@@ -83,10 +83,10 @@ func (c BalanceController) findUserFromRequest(r *http.Request) (user.User, erro
 	userID, ok := r.Context().Value(middleware.UserID(middleware.UserIDContextKey)).(uint32)
 
 	if !ok {
-		return user.User{}, errors.New("UserId not set in Cookie")
+		return user.User{}, errors.New("UserID not set in Cookie")
 	}
 
-	loggedUser, userSearchErr := c.UserRepo.FindUserById(userID)
+	loggedUser, userSearchErr := c.UserRepo.FindUserByID(userID)
 	if userSearchErr != nil {
 		return user.User{}, userSearchErr
 	}

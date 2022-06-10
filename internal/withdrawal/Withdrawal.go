@@ -10,7 +10,7 @@ type Withdrawal struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	UserId    uint32
+	UserID    uint32
 	Sum       float64
-	OrderId   uint
+	OrderID   uint
 }

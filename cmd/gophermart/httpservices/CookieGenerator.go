@@ -1,4 +1,4 @@
-package httpServices
+package httpservices
 
 import (
 	"crypto/hmac"

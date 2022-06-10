@@ -16,13 +16,13 @@ import (
 )
 
 type OrderController struct {
-	ItemRepo *item.DbRepository
-	UserRepo *user.DbRepository
+	ItemRepo *item.DBRepository
+	UserRepo *user.DBRepository
 	Config   *config.Config
 }
 
 func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
-	orderId, err := httpServices.GetOrderIdFromRequest(r)
+	orderID, err := httpservices.GetOrderIDFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
@@ -35,7 +35,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	order, orderFound, orderSearchErr := c.ItemRepo.GetItemByOrderId(orderId)
+	order, orderFound, orderSearchErr := c.ItemRepo.GetItemByOrderID(orderID)
 
 	if orderSearchErr != nil {
 		http.Error(w, "Errors searching for the order", http.StatusInternalServerError)
@@ -43,7 +43,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if orderFound {
-		if order.UserId == loggedUser.ID {
+		if order.UserID == loggedUser.ID {
 			w.WriteHeader(http.StatusOK)
 			return
 		} else {
@@ -52,7 +52,7 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, storeErr := c.ItemRepo.StoreItem(loggedUser.ID, orderId, item.StatusNew, 0)
+	_, storeErr := c.ItemRepo.StoreItem(loggedUser.ID, orderID, item.StatusNew, 0)
 
 	if storeErr != nil {
 		http.Error(w, "error storing the order", http.StatusBadRequest)
@@ -79,10 +79,10 @@ func (c OrderController) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	outputItems := make([]Dto.Item, 0)
+	outputItems := make([]dto.Item, 0)
 	for _, dbItem := range items {
-		outputItems = append(outputItems, Dto.Item{
-			Number:     strconv.FormatUint(uint64(dbItem.OrderId), 10),
+		outputItems = append(outputItems, dto.Item{
+			Number:     strconv.FormatUint(uint64(dbItem.OrderID), 10),
 			Status:     dbItem.Status,
 			Accrual:    dbItem.Bonus,
 			UploadedAt: time.Time{},
@@ -107,10 +107,10 @@ func (c OrderController) findUserFromRequest(r *http.Request) (user.User, error)
 	userID, ok := r.Context().Value(middleware.UserID(middleware.UserIDContextKey)).(uint32)
 
 	if !ok {
-		return user.User{}, errors.New("UserId not set in Cookie")
+		return user.User{}, errors.New("UserID not set in Cookie")
 	}
 
-	loggedUser, userSearchErr := c.UserRepo.FindUserById(userID)
+	loggedUser, userSearchErr := c.UserRepo.FindUserByID(userID)
 	if userSearchErr != nil {
 		return user.User{}, userSearchErr
 	}

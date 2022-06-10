@@ -13,12 +13,12 @@ import (
 )
 
 type AuthController struct {
-	UserRepo *user.DbRepository
+	UserRepo *user.DBRepository
 	Config   *config.Config
 }
 
 func (c AuthController) Register(w http.ResponseWriter, r *http.Request) {
-	var authData Dto.AuthData
+	var authData dto.AuthData
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&authData); decodeErr != nil {
 		http.Error(w, "please check that all fields are sent", http.StatusBadRequest)
@@ -54,7 +54,7 @@ func (c AuthController) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authCookie := httpServices.GenerateUserCookie(newUser.ID, []byte(c.Config.SecretKey))
+	authCookie := httpservices.GenerateUserCookie(newUser.ID, []byte(c.Config.SecretKey))
 	http.SetCookie(w, &authCookie)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -62,7 +62,7 @@ func (c AuthController) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
-	var authData Dto.AuthData
+	var authData dto.AuthData
 
 	if decodeErr := json.NewDecoder(r.Body).Decode(&authData); decodeErr != nil {
 		http.Error(w, "please check that all fields are sent", http.StatusBadRequest)
@@ -91,7 +91,7 @@ func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authCookie := httpServices.GenerateUserCookie(dbUser.ID, []byte(c.Config.SecretKey))
+	authCookie := httpservices.GenerateUserCookie(dbUser.ID, []byte(c.Config.SecretKey))
 	http.SetCookie(w, &authCookie)
 
 	w.Header().Set("Content-Type", "application/json")

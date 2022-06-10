@@ -4,13 +4,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type DbRepository struct {
-	DbConnection *gorm.DB
+type DBRepository struct {
+	DBConnection *gorm.DB
 }
 
-func InitDatabaseRepository(dbConnection *gorm.DB) *DbRepository {
-	dbRepo := DbRepository{
-		DbConnection: dbConnection,
+func InitDatabaseRepository(dbConnection *gorm.DB) *DBRepository {
+	dbRepo := DBRepository{
+		DBConnection: dbConnection,
 	}
 
 	return &dbRepo

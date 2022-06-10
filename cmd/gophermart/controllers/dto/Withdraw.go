@@ -1,4 +1,4 @@
-package Dto
+package dto
 
 type Withdraw struct {
 	Order string  `json:"order"`

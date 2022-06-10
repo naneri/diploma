@@ -4,22 +4,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type DbRepository struct {
-	DbConnection *gorm.DB
+type DBRepository struct {
+	DBConnection *gorm.DB
 }
 
-func InitDatabaseRepository(dbConnection *gorm.DB) *DbRepository {
-	dbRepo := DbRepository{
-		DbConnection: dbConnection,
+func InitDatabaseRepository(dbConnection *gorm.DB) *DBRepository {
+	dbRepo := DBRepository{
+		DBConnection: dbConnection,
 	}
 
 	return &dbRepo
 }
 
-func (repo DbRepository) GetItemByOrderId(orderId uint) (Item, bool, error) {
+func (repo DBRepository) GetItemByOrderID(orderID uint) (Item, bool, error) {
 	var item Item
 
-	searchErr := repo.DbConnection.Where("order_id", orderId).Find(&item)
+	searchErr := repo.DBConnection.Where("order_id", orderID).Find(&item)
 
 	if searchErr.Error != nil {
 		return Item{}, false, searchErr.Error
@@ -32,25 +32,25 @@ func (repo DbRepository) GetItemByOrderId(orderId uint) (Item, bool, error) {
 	}
 }
 
-func (repo DbRepository) StoreItem(userId uint32, orderId uint, status string, accrual float64) (Item, error) {
+func (repo DBRepository) StoreItem(userID uint32, orderID uint, status string, accrual float64) (Item, error) {
 	item := Item{
-		OrderId: orderId,
+		OrderID: orderID,
 		Bonus:   accrual,
-		UserId:  userId,
+		UserID:  userID,
 		Status:  status,
 	}
 
-	if storeErr := repo.DbConnection.Create(&item).Error; storeErr != nil {
+	if storeErr := repo.DBConnection.Create(&item).Error; storeErr != nil {
 		return Item{}, storeErr
 	}
 
 	return item, nil
 }
 
-func (repo DbRepository) GetUserItems(userId uint32) ([]Item, error) {
+func (repo DBRepository) GetUserItems(userId uint32) ([]Item, error) {
 	var items []Item
 
-	err := repo.DbConnection.Where("user_id", userId).Find(&items).Error
+	err := repo.DBConnection.Where("user_id", userId).Find(&items).Error
 
 	if err != nil {
 		return nil, err
@@ -59,10 +59,10 @@ func (repo DbRepository) GetUserItems(userId uint32) ([]Item, error) {
 	return items, nil
 }
 
-func (repo DbRepository) GetUnprocessedItems() ([]Item, error) {
+func (repo DBRepository) GetUnprocessedItems() ([]Item, error) {
 	var items []Item
 
-	err := repo.DbConnection.
+	err := repo.DBConnection.
 		Where("status IN ?", []string{StatusNew, StatusProcessing}).
 		Find(&items).
 		Error
@@ -74,9 +74,9 @@ func (repo DbRepository) GetUnprocessedItems() ([]Item, error) {
 	return items, nil
 }
 
-func (repo DbRepository) UpdateItemStatusAndAccrualByOrderId(orderId uint, status string, accrual float64) error {
-	return repo.DbConnection.Table("items").
-		Where("order_id", orderId).
+func (repo DBRepository) UpdateItemStatusAndAccrualByOrderID(orderID uint, status string, accrual float64) error {
+	return repo.DBConnection.Table("items").
+		Where("order_id", orderID).
 		Updates(map[string]interface{}{
 			"status": status,
 			"bonus":  accrual,

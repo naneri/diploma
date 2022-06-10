@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func ProcessOrders(UserRepo *user.DbRepository, ItemRepo *item.DbRepository, AccrualSystemAddress string) {
+func ProcessOrders(UserRepo *user.DBRepository, ItemRepo *item.DBRepository, AccrualSystemAddress string) {
 	unprocessedItems, queryErr := ItemRepo.GetUnprocessedItems()
 
 	if queryErr != nil {
@@ -19,25 +19,25 @@ func ProcessOrders(UserRepo *user.DbRepository, ItemRepo *item.DbRepository, Acc
 	}
 
 	for _, dbItem := range unprocessedItems {
-		var dtoOrder Dto.Order
+		var dtoOrder dto.Order
 		time.Sleep(time.Second)
 		client := resty.New()
 
 		_, requestErr := client.R().SetResult(&dtoOrder).
-			Get(fmt.Sprintf("%s/api/orders/%d", AccrualSystemAddress, dbItem.OrderId))
+			Get(fmt.Sprintf("%s/api/orders/%d", AccrualSystemAddress, dbItem.OrderID))
 
 		if requestErr != nil {
 			log.Println(requestErr.Error())
 			return
 		}
 
-		err := ItemRepo.UpdateItemStatusAndAccrualByOrderId(dtoOrder.Order, dtoOrder.Status, dtoOrder.Accrual)
+		err := ItemRepo.UpdateItemStatusAndAccrualByOrderID(dtoOrder.Order, dtoOrder.Status, dtoOrder.Accrual)
 		if err != nil {
 			log.Println(err.Error())
 			continue
 		}
 
-		updateBalanceErr := UserRepo.UpdateUserBalance(dbItem.UserId, dtoOrder.Accrual)
+		updateBalanceErr := UserRepo.UpdateUserBalance(dbItem.UserID, dtoOrder.Accrual)
 
 		if updateBalanceErr != nil {
 			log.Println(updateBalanceErr.Error())

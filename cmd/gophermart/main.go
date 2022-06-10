@@ -19,8 +19,8 @@ import (
 
 var cfg config.Config
 var db *gorm.DB
-var userRepo *user.DbRepository
-var itemRepo *item.DbRepository
+var userRepo *user.DBRepository
+var itemRepo *item.DBRepository
 
 func main() {
 
@@ -54,7 +54,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 }
 
-func processOrders(UserRepo *user.DbRepository, ItemRepo *item.DbRepository, AccrualSystemAddress string) {
+func processOrders(UserRepo *user.DBRepository, ItemRepo *item.DBRepository, AccrualSystemAddress string) {
 	for {
 		services.ProcessOrders(UserRepo, ItemRepo, AccrualSystemAddress)
 		time.Sleep(5 * time.Second)
@@ -80,7 +80,7 @@ func mainHandler() *chi.Mux {
 
 	balanceController := controllers.BalanceController{
 		UserRepo:     userRepo,
-		DbConnection: db,
+		DBConnection: db,
 	}
 
 	r.Post("/api/user/register", authController.Register)
