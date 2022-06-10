@@ -78,6 +78,11 @@ func mainHandler() *chi.Mux {
 		Config:   &cfg,
 	}
 
+	balanceController := controllers.BalanceController{
+		UserRepo:     userRepo,
+		DbConnection: db,
+	}
+
 	r.Post("/api/user/register", authController.Register)
 	r.Post("/api/user/login", authController.Login)
 
@@ -85,6 +90,8 @@ func mainHandler() *chi.Mux {
 		r.Use(middleware.IDMiddleware)
 		r.Post("/api/user/orders", itemController.Add)
 		r.Get("/api/user/orders", itemController.List)
+		r.Get("/api/user/balance", balanceController.GetCurrentBalance)
+		r.Post("/api/user/balance/withdraw", balanceController.RequestWithdraw)
 	})
 
 	return r

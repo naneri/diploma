@@ -12,5 +12,6 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	Login     string
 	Password  string
+	WithDrawn float64 `sql:"DEFAULT:0"`
 	Balance   float64 `sql:"DEFAULT:0"`
 }

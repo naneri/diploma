@@ -5,11 +5,10 @@ import (
 	"errors"
 	"github.com/naneri/diploma/cmd/gophermart/config"
 	"github.com/naneri/diploma/cmd/gophermart/controllers/Dto"
+	"github.com/naneri/diploma/cmd/gophermart/httpServices"
 	"github.com/naneri/diploma/cmd/gophermart/middleware"
 	"github.com/naneri/diploma/internal/item"
-	"github.com/naneri/diploma/internal/services"
 	"github.com/naneri/diploma/internal/user"
-	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -23,7 +22,7 @@ type OrderController struct {
 }
 
 func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
-	orderId, err := c.getOrderIdFromRequest(r)
+	orderId, err := httpServices.GetOrderIdFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
@@ -102,27 +101,6 @@ func (c OrderController) List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error generating response", http.StatusInternalServerError)
 		return
 	}
-}
-
-func (c OrderController) getOrderIdFromRequest(r *http.Request) (uint, error) {
-	orderId, err := io.ReadAll(r.Body)
-	// обрабатываем ошибку
-	if err != nil {
-		return 0, err
-	}
-
-	stringOrderId := string(orderId)
-
-	intOrderId, parseErr := strconv.Atoi(stringOrderId)
-	if parseErr != nil {
-		return 0, errors.New("wrong input format")
-	}
-
-	if !services.ValidLuhn(intOrderId) {
-		return 0, errors.New("incorrect order id")
-	}
-
-	return uint(intOrderId), nil
 }
 
 func (c OrderController) findUserFromRequest(r *http.Request) (user.User, error) {

@@ -6,6 +6,7 @@ import (
 )
 
 type DbRepository struct {
+	// not sure if this is correct to add a mutex.Lock() features to this repo, as in a high-load system, this will give a huge overhead. I would prefer to only lock access to a single user balance.
 	Access       sync.Mutex
 	DbConnection *gorm.DB
 }
