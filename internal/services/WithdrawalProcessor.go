@@ -12,7 +12,7 @@ func PerformWithdraw(db *gorm.DB, userRepo *user.DbRepository, userId uint32, su
 	return db.Transaction(func(tx *gorm.DB) error {
 		var dbUser user.User
 
-		if err := tx.Where("user_id", userId).First(&dbUser).Error; err != nil {
+		if err := tx.Where("id", userId).First(&dbUser).Error; err != nil {
 			return err
 		}
 
@@ -23,6 +23,7 @@ func PerformWithdraw(db *gorm.DB, userRepo *user.DbRepository, userId uint32, su
 			}
 		}
 		dbUser.Balance += sum * -1
+		dbUser.WithDrawn += sum
 
 		if err := tx.Save(&dbUser).Error; err != nil {
 			return err

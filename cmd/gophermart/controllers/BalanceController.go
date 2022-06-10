@@ -10,6 +10,7 @@ import (
 	"github.com/naneri/diploma/internal/services"
 	"github.com/naneri/diploma/internal/user"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 )
 
@@ -71,6 +72,7 @@ func (c BalanceController) RequestWithdraw(w http.ResponseWriter, r *http.Reques
 
 	if withDrawErr != nil {
 		http.Error(w, "error processing the withdraw", http.StatusInternalServerError)
+		log.Println(withDrawErr)
 		return
 	}
 
