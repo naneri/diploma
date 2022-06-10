@@ -46,3 +46,15 @@ func (repo DbRepository) StoreItem(userId uint32, orderId uint, status string, a
 
 	return item, nil
 }
+
+func (repo DbRepository) GetUserItems(userId uint32) ([]Item, error) {
+	var items []Item
+
+	err := repo.DbConnection.Where("user_id", userId).Find(&items).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}

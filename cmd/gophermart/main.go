@@ -75,6 +75,7 @@ func mainHandler() *chi.Mux {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.IDMiddleware)
 		r.Post("/api/user/orders", itemController.Add)
+		r.Get("/api/user/orders", itemController.List)
 	})
 
 	return r
