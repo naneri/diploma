@@ -2,9 +2,11 @@ package user
 
 import (
 	"gorm.io/gorm"
+	"sync"
 )
 
 type DbRepository struct {
+	Access       sync.Mutex
 	DbConnection *gorm.DB
 }
 
@@ -17,6 +19,8 @@ func InitDatabaseRepository(dbConnection *gorm.DB) *DbRepository {
 }
 
 func (dbRepo *DbRepository) Save(login, hashedPass string) (User, error) {
+	dbRepo.Access.Lock()
+	defer dbRepo.Access.Unlock()
 	var user User
 
 	searchErr := dbRepo.DbConnection.Where("login", login).Find(&user).Error
@@ -40,6 +44,8 @@ func (dbRepo *DbRepository) Save(login, hashedPass string) (User, error) {
 }
 
 func (dbRepo *DbRepository) Find(login string) (User, bool, error) {
+	dbRepo.Access.Lock()
+	defer dbRepo.Access.Unlock()
 	var user User
 
 	searchErr := dbRepo.DbConnection.Where("login", login).Find(&user)
@@ -56,6 +62,8 @@ func (dbRepo *DbRepository) Find(login string) (User, bool, error) {
 }
 
 func (dbRepo *DbRepository) FindUserById(id uint32) (User, error) {
+	dbRepo.Access.Lock()
+	defer dbRepo.Access.Unlock()
 	var user User
 
 	searchErr := dbRepo.DbConnection.Where("id", id).First(&user).Error
@@ -68,6 +76,8 @@ func (dbRepo *DbRepository) FindUserById(id uint32) (User, error) {
 }
 
 func (dbRepo *DbRepository) UpdateUserBalance(userId uint32, bonus float64) error {
+	dbRepo.Access.Lock()
+	defer dbRepo.Access.Unlock()
 	var user User
 
 	if searchErr := dbRepo.DbConnection.Where("id", userId).First(&user).Error; searchErr != nil {

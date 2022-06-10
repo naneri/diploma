@@ -58,3 +58,27 @@ func (repo DbRepository) GetUserItems(userId uint32) ([]Item, error) {
 
 	return items, nil
 }
+
+func (repo DbRepository) GetUnprocessedItems() ([]Item, error) {
+	var items []Item
+
+	err := repo.DbConnection.
+		Where("status IN ?", []string{StatusNew, StatusProcessing}).
+		Find(&items).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (repo DbRepository) UpdateItemStatusAndAccrualByOrderId(orderId uint, status string, accrual float64) error {
+	return repo.DbConnection.Table("items").
+		Where("order_id", orderId).
+		Updates(map[string]interface{}{
+			"status": status,
+			"bonus":  accrual,
+		}).Error
+}

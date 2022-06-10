@@ -1,7 +1,7 @@
 package Dto
 
 type Order struct {
-	Order   int
+	Order   uint `json:"order,string"`
 	Status  string
 	Accrual float64
 }

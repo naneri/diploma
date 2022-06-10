@@ -3,8 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/go-resty/resty/v2"
 	"github.com/naneri/diploma/cmd/gophermart/config"
 	"github.com/naneri/diploma/cmd/gophermart/controllers/Dto"
 	"github.com/naneri/diploma/cmd/gophermart/middleware"
@@ -64,32 +62,6 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
-
-	// _________
-	// _________   NEED TO Move this to a dedicated process that will review the
-	// _________
-	client := resty.New()
-
-	resp, requestErr := client.R().Get(fmt.Sprintf("%s/api/orders/%d", c.Config.AccrualAddress, orderId))
-	if requestErr != nil {
-		http.Error(w, "Errors searching for the order in the accrual system", http.StatusInternalServerError)
-		return
-	}
-
-	var dtoOrder Dto.Order
-
-	if respDecode := json.NewDecoder(resp.RawBody()).Decode(&dtoOrder); respDecode != nil {
-		http.Error(w, "error interacting with internal system", http.StatusBadRequest)
-		log.Println("error decoding Order json from internal system: " + respDecode.Error())
-		return
-	}
-
-	if dtoOrder.Accrual != 0 {
-		updateErr := c.UserRepo.UpdateUserBalance(loggedUser.ID, dtoOrder.Accrual)
-		if updateErr != nil {
-			log.Println("error updating the balance: ", updateErr)
-		}
-	}
 }
 
 func (c OrderController) List(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +102,6 @@ func (c OrderController) List(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error generating response", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func (c OrderController) getOrderIdFromRequest(r *http.Request) (uint, error) {

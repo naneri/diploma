@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"time"
 )
 
 var cfg config.Config
@@ -46,10 +47,18 @@ func main() {
 	userRepo = user.InitDatabaseRepository(db)
 	itemRepo = item.InitDatabaseRepository(db)
 
-	r := mainHandler()
+	go processOrders(userRepo, itemRepo, cfg.AccrualAddress)
 
+	r := mainHandler()
 	log.Println("Server started at port " + cfg.ServerAddress)
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
+}
+
+func processOrders(UserRepo *user.DbRepository, ItemRepo *item.DbRepository, AccrualSystemAddress string) {
+	for {
+		services.ProcessOrders(UserRepo, ItemRepo, AccrualSystemAddress)
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func mainHandler() *chi.Mux {
