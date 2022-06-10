@@ -28,6 +28,7 @@ func (c BalanceController) GetCurrentBalance(w http.ResponseWriter, r *http.Requ
 		Withdrawn: loggedUser.WithDrawn,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	encodeErr := json.NewEncoder(w).Encode(balance)
 
 	if encodeErr != nil {
