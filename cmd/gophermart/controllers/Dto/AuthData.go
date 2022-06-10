@@ -2,7 +2,6 @@ package Dto
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 )
@@ -13,7 +12,6 @@ type AuthData struct {
 }
 
 func (a *AuthData) CheckForEmptyFields() error {
-	fmt.Println(a)
 	fields := reflect.ValueOf(a).Elem()
 	for i := 0; i < fields.NumField(); i++ {
 

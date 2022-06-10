@@ -73,6 +73,16 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	_, storeErr := c.ItemRepo.StoreItem(userID, uint(intOrderId), item.StatusNew, 0)
+
+	if storeErr != nil {
+		http.Error(w, "error storing the order", http.StatusBadRequest)
+		log.Println("error storing the order: " + storeErr.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+
 	client := resty.New()
 
 	resp, requestErr := client.R().Get(fmt.Sprintf("%s/api/orders/%d", c.Config.AccrualAddress, intOrderId))
@@ -85,19 +95,9 @@ func (c OrderController) Add(w http.ResponseWriter, r *http.Request) {
 
 	if respDecode := json.NewDecoder(resp.RawBody()).Decode(&dtoOrder); respDecode != nil {
 		http.Error(w, "error interacting with internal system", http.StatusBadRequest)
-		log.Println("error decoding json: " + respDecode.Error())
+		log.Println("error decoding Order json from internal system: " + respDecode.Error())
 		return
 	}
-
-	_, storeErr := c.ItemRepo.StoreItem(userID, uint(intOrderId), dtoOrder.Status, dtoOrder.Accrual)
-
-	if storeErr != nil {
-		http.Error(w, "error storing the order", http.StatusBadRequest)
-		log.Println("error storing the order: " + storeErr.Error())
-		return
-	}
-
-	w.WriteHeader(http.StatusAccepted)
 
 	if dtoOrder.Accrual != 0 {
 		updateErr := c.UserRepo.UpdateUserBalance(userID, dtoOrder.Accrual)

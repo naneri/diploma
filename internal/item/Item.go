@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+const StatusNew = "NEW"
+const StatusProcessing = "PROCESSING"
+const StatusInavalid = "INVALID"
+const StatusProcessed = "PROCESSED"
+
 type Item struct {
 	ID        uint `gorm:"primarykey"`
 	CreatedAt time.Time
