@@ -49,7 +49,7 @@ func (c AuthController) Register(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, hashErr := services.HashPassword(authData.Password)
 
 	if hashErr != nil {
-		http.Error(w, searchErr.Error(), http.StatusInternalServerError)
+		http.Error(w, "some internal error", http.StatusInternalServerError)
 		return
 	}
 
