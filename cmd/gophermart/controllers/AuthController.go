@@ -88,11 +88,11 @@ func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	dbUser, userExists, searchErr := c.UserRepo.Find(authData.Login)
 
 	if searchErr != nil || !userExists {
-		http.Error(w, searchErr.Error(), http.StatusInternalServerError)
+		http.Error(w, "some internal error or user does not exist", http.StatusInternalServerError)
 		return
 	}
 
-	if services.CheckPasswordHash(authData.Password, dbUser.Password) {
+	if !services.CheckPasswordHash(authData.Password, dbUser.Password) {
 		http.Error(w, "login or password incorrect", http.StatusUnauthorized)
 		log.Printf("wrong login data for user %s \n", dbUser.Login)
 		return

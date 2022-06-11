@@ -25,7 +25,6 @@ var itemRepo *item.DBRepository
 var withdrawalRepo *withdrawal.DBRepository
 
 func main() {
-
 	configErr := env.Parse(&cfg)
 
 	if configErr != nil {
@@ -52,6 +51,7 @@ func main() {
 
 	go processOrders(userRepo, itemRepo, cfg.AccrualAddress)
 
+	// I keep mainHandler without any dependencies so that I could test it independently
 	r := mainHandler()
 	log.Println("Server started at port " + cfg.ServerAddress)
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
