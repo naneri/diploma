@@ -46,7 +46,14 @@ func (c AuthController) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUser, saveErr := c.UserRepo.Save(authData.Login, authData.Password)
+	hashedPassword, hashErr := services.HashPassword(authData.Password)
+
+	if hashErr != nil {
+		http.Error(w, searchErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	newUser, saveErr := c.UserRepo.Save(authData.Login, hashedPassword)
 
 	if saveErr != nil {
 		http.Error(w, "error storing the user", http.StatusInternalServerError)
@@ -85,7 +92,7 @@ func (c AuthController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !services.CheckUserPassword(authData.Password, dbUser) {
+	if services.CheckPasswordHash(authData.Password, dbUser.Password) {
 		http.Error(w, "login or password incorrect", http.StatusUnauthorized)
 		log.Printf("wrong login data for user %s \n", dbUser.Login)
 		return
