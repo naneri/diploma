@@ -1,15 +1,28 @@
 package main
 
 import (
+	"flag"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
-	"github.com/naneri/diploma/cmd/config"
-	"github.com/naneri/diploma/cmd/middleware"
+	"github.com/naneri/diploma/cmd/gophermart/config"
+	"github.com/naneri/diploma/cmd/gophermart/controllers"
+	"github.com/naneri/diploma/cmd/gophermart/middleware"
+	"github.com/naneri/diploma/internal/item"
+	"github.com/naneri/diploma/internal/services"
+	"github.com/naneri/diploma/internal/user"
+	"github.com/naneri/diploma/internal/withdrawal"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"time"
 )
 
 var cfg config.Config
+var db *gorm.DB
+var userRepo *user.DBRepository
+var itemRepo *item.DBRepository
+var withdrawalRepo *withdrawal.DBRepository
 
 func main() {
 	configErr := env.Parse(&cfg)
@@ -18,15 +31,73 @@ func main() {
 		log.Fatalf("error parsing config: %v", configErr)
 	}
 
-	r := mainHandler()
+	if flag.Lookup("a") == nil {
+		flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "default server Port")
+		flag.StringVar(&cfg.DatabaseAddress, "d", cfg.DatabaseAddress, "database DSN")
+		flag.StringVar(&cfg.AccrualAddress, "r", cfg.AccrualAddress, "accrual system address")
+	}
 
+	flag.Parse()
+
+	var dbErr error
+	db, dbErr = gorm.Open(postgres.Open(cfg.DatabaseAddress), &gorm.Config{})
+	if dbErr != nil {
+		log.Fatalf("error connecting to database")
+	}
+	services.RunMigrations(db)
+	userRepo = user.InitDatabaseRepository(db)
+	itemRepo = item.InitDatabaseRepository(db)
+	withdrawalRepo = withdrawal.InitDatabaseRepository(db)
+
+	go processOrders(userRepo, itemRepo, cfg.AccrualAddress)
+
+	// I keep mainHandler without any dependencies so that I could test it independently
+	r := mainHandler()
 	log.Println("Server started at port " + cfg.ServerAddress)
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
+}
+
+func processOrders(UserRepo *user.DBRepository, ItemRepo *item.DBRepository, AccrualSystemAddress string) {
+	for {
+		services.ProcessOrders(UserRepo, ItemRepo, AccrualSystemAddress)
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func mainHandler() *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.GzipMiddleware)
+	r.Use(middleware.DecompressGZIP)
+
+	authController := controllers.AuthController{
+		UserRepo: userRepo,
+		Config:   &cfg,
+	}
+
+	itemController := controllers.OrderController{
+		ItemRepo: itemRepo,
+		UserRepo: userRepo,
+		Config:   &cfg,
+	}
+
+	balanceController := controllers.BalanceController{
+		UserRepo:       userRepo,
+		WithdrawalRepo: withdrawalRepo,
+		DBConnection:   db,
+	}
+
+	r.Post("/api/user/register", authController.Register)
+	r.Post("/api/user/login", authController.Login)
+
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.IDMiddleware)
+		r.Post("/api/user/orders", itemController.Add)
+		r.Get("/api/user/orders", itemController.List)
+		r.Get("/api/user/balance", balanceController.GetCurrentBalance)
+		r.Post("/api/user/balance/withdraw", balanceController.RequestWithdraw)
+		r.Get("/api/user/withdrawals", balanceController.ListWithdrawals)
+	})
+
 	return r
 }
